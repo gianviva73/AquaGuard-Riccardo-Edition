@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pool Guard Pro v4.0 - Full Assistant</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --secondary: #0ea5e9;
+            --bg: #f0f9ff;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; padding-bottom: 80px; }
+        .header { text-align: center; margin-bottom: 20px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 20px; border-radius: var(--radius); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: relative; }
+        .header h1 { font-size: 1.6rem; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 0.9rem; }
+        
+        .btn-guide { position: absolute; right: 15px; top: 15px; background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+        .btn-guide:hover { background: white; color: var(--primary-dark); }
+
+        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; max-width: 800px; margin: 0 auto; }
+        @media(min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } .full-width { grid-column: span 2; } }
+        .card { background: var(--card-bg); padding: 15px; border-radius: var(--radius); box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0f2fe; }
+        .card-title { font-size: 1.1rem; font-weight: bold; color: var(--primary-dark); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        
+        /* Modal Guida */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-content { background: white; border-radius: var(--radius); max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
+        .close-modal { position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; color: #64748b; }
+
+        /* Contatore Presenze */
+        .counter-box { text-align: center; }
+        .counter-number { font-size: 3rem; font-weight: 800; color: var(--primary-dark); margin: 5px 0; }
+        .counter-btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+        .btn-counter { font-size: 1.8rem; width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--primary); color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-counter:active { transform: scale(0.95); }
+        .progress-bar-bg { width: 100%; height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; margin-top: 10px; }
+        .progress-bar-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.3s, background-color 0.3s; }
+        .overflow-alert { background: var(--danger) !important; animation: pulse 1s infinite; }
+
+        /* Allarme Emergenza */
+        .btn-emergency { width: 100%; padding: 15px; background: var(--danger); color: white; border: none; border-radius: var(--radius); font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); }
+        .btn-emergency:active { transform: scale(0.98); }
+
+        /* Task Reminder */
+        .task-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); }
+        .task-item.completed { border-left-color: var(--success); opacity: 0.6; text-decoration: line-through; }
+        .task-btn { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border: none; background: var(--success); color: white; cursor: pointer; }
+
+        /* Inputs & Buttons */
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 0.85rem; color: #64748b; margin-bottom: 4px; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; background: var(--primary); color: white; transition: background 0.2s; }
+        .btn:hover { background: var(--primary-dark); }
+        
+        /* Sunbed Grid */
+        .legend { display: flex; gap: 10px; font-size: 0.75rem; margin-bottom: 10px; justify-content: center; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 30%; }
+        .sunbed-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; }
+        .sunbed { padding: 12px 2px; text-align: center; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); user-select: none; transition: transform 0.1s; }
+        .sunbed:active { transform: scale(0.92); }
+        .sunbed.free { background: #dcfce7; color: #166534; border-color: #86efac; }
+        .sunbed.occupied { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .sunbed.reserved { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+
+        /* Logs Dettagliati */
+        .log-list { list-style: none; max-height: 220px; overflow-y: auto; font-size: 0.85rem; margin-top: 10px; }
+        .log-item { padding: 10px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #fafafa; margin-bottom: 4px; border-radius: 6px; }
+        .log-item-details { display: flex; flex-direction: column; gap: 2px; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .btn, .btn-counter, .btn-emergency, .btn-guide, .counter-btn-group, .sunbed-grid, .legend, .task-btn { display: none !important; }
+            .card { box-shadow: none; border: 1px solid #ccc; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏊‍♂️ Pool Guard Pro v4.0</h1>
+        <p>Hub Operativo per Assistenti Bagnanti</p>
+        <button class="btn-guide" onclick="openGuide()">📖 Guida Utente</button>
+    </div>
+
+    <!-- Modale Guida Utente Integrata -->
+    <div class="modal" id="guideModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeGuide()">&times;</span>
+            <h2 style="color: var(--primary-dark); margin-bottom: 15px;">📖 Manuale Utente - Pool Guard Pro</h2>
+            
+            <h4 style="color: var(--primary); margin-top: 10px;">1. Presenze & Capienza (Max 150)</h4>
+            <p style="font-size: 0.85rem; color: #475569;">Usa i pulsanti <strong>+</strong> e <strong>-</strong> per registrare i bagnanti in vasca. La barra diventa verde (sicuro), gialla (in esaurimento) o <strong>rossa lampeggiante</strong> se superi quota 150.</p>
+
+            <h4 style="color: var(--primary); margin-top: 10px;">2. Allarme Evacuazione / Maltempo</h4>
+            <p style="font-size: 0.85rem; color: #475569;">In caso di fulmini o vento forte, premi il pulsante rosso in alto. Verrà memorizzato l'orario di stop vasca nel registro eventi.</p>
+
+            <h4 style="color: var(--primary); margin-top: 10px;">3. Chimica Vasca & Dosaggi</h4>
+            <p style="font-size: 0.85rem; color: #475569;">Inserisci i m³ della piscina, il pH e il Cloro rilevati. L'app calcolerà in tempo reale i grammi esatti di prodotto chimico da versare.</p>
+
+            <h4 style="color: var(--primary); margin-top: 10px;">4. Promemoria & Manutenzione</h4>
+            <p style="font-size: 0.85rem; color: #475569;">Clicca su 'Eseguito' per registrare al volo il controlavaggio dei filtri, la misurazione dei parametri o la pulizia vasca.</p>
+
+            <h4 style="color: var(--primary); margin-top: 10px;">5. Solarium & Lettini</h4>
+            <p style="font-size: 0.85rem; color: #475569;">Tocca un qualsiasi lettino (L-1, L-2...) per cambiarne lo stato tra <strong>Libero</strong> (Verde), <strong>Occupato</strong> (Rosso) e <strong>Riservato</strong> (Giallo).</p>
+
+            <h4 style="color: var(--primary); margin-top: 10px;">6. Registro Interventi Dettagliato</h4>
+            <p style="font-size: 0.85rem; color: #475569;">Imposta l'orario, seleziona il tipo di intervento, aggiungi eventuali note (es. medicazione) e clicca su 'Registra Intervento'.</p>
+        </div>
+    </div>
+
+    <div class="grid">
+
+        <!-- Emergenza Maltempo -->
+        <div class="card full-width" style="border: 2px solid var(--danger);">
+            <button class="btn-emergency" onclick="triggerEmergency()">
+                ⚡ ALLARME MALTEMPO / EVACUAZIONE VASCA
+            </button>
+        </div>
+
+        <!-- Contatore Presenze (Max 150) -->
+        <div class="card counter-box">
+            <div class="card-title">
+                <span>👥 Presenze In Vasca</span>
+                <span id="capacity-text" style="font-size:0.85rem; color:#64748b;">0 / 150</span>
+            </div>
+            <div class="counter-number" id="counter-val">0</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+            <div class="counter-btn-group">
+                <button class="btn-counter" onclick="changeCount(-1)">-</button>
+                <button class="btn-counter" onclick="changeCount(1)">+</button>
+            </div>
+        </div>
+
+        <!-- Calcolatore Chimico -->
+        <div class="card">
+            <div class="card-title">🧪 Parametri Acqua</div>
+            <div class="input-group">
+                <label>Volume Piscina (m³)</label>
+                <input type="number" id="pool-vol" value="300" onchange="calcChemicals()">
+            </div>
+            <div class="input-group">
+                <label>pH Rilevato</label>
+                <input type="number" step="0.1" id="ph-val" value="7.2" onchange="calcChemicals()">
+            </div>
+            <div class="input-group">
+                <label>Cloro Libero (ppm)</label>
+                <input type="number" step="0.1" id="cl-val" value="1.5" onchange="calcChemicals()">
+            </div>
+            <div id="chem-result" style="font-size: 0.85rem; margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                Stato: <strong>Parametri Regolari</strong>
+            </div>
+        </div>
+
+        <!-- Promemoria Operativi & Filtri -->
+        <div class="card full-width">
+            <div class="card-title">⏰ Promemoria & Manutenzione Vasca</div>
+            <div id="task-container">
+                <div class="task-item" id="task-1">
+                    <div>
+                        <strong>🔄 Controlavaggio Filtri</strong>
+                        <div style="font-size: 0.75rem; color: #64748b;">Consigliato ogni 2 giorni o con pressione alta</div>
+                    </div>
+                    <button class="task-btn" onclick="completeTask('task-1', 'Controlavaggio Filtri')">Eseguito</button>
+                </div>
+                <div class="task-item" id="task-2">
+                    <div>
+                        <strong>🧪 Misurazione pH e Cloro</strong>
+                        <div style="font-size: 0.75rem; color: #64748b;">Turno Mattina / Turno Pomeriggio</div>
+                    </div>
+                    <button class="task-btn" onclick="completeTask('task-2', 'Misurazione Chimica')">Eseguito</button>
+                </div>
+                <div class="task-item" id="task-3">
+                    <div>
+                        <strong>🧹 Pulizia Cestelli Skimmer & Fondo</strong>
+                        <div style="font-size: 0.75rem; color: #64748b;">Prima dell'apertura al pubblico</div>
+                    </div>
+                    <button class="task-btn" onclick="completeTask('task-3', 'Pulizia Skimmer e Fondo')">Eseguito</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mappa Lettini con Legenda Colorata -->
+        <div class="card full-width">
+            <div class="card-title">
+                <span>🏖️ Solarium & Lettini</span>
+                <span style="font-size: 0.75rem; font-weight: normal; color: #64748b;">Tocca un lettino per cambiare stato</span>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#dcfce7; border:1px solid #86efac;"></div> Libero</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#fee2e2; border:1px solid #fca5a5;"></div> Occupato</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#fef3c7; border:1px solid #fde68a;"></div> Riservato</div>
+            </div>
+            <div class="sunbed-grid" id="sunbed-container"></div>
+        </div>
+
+        <!-- Registro Interventi Dettagliato con Orario e Note -->
+        <div class="card full-width">
+            <div class="card-title">📝 Registro Eventi & Interventi</div>
+            
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                <div class="input-group" style="margin:0;">
+                    <label>Orario Evento</label>
+                    <input type="time" id="custom-log-time">
+                </div>
+                <div class="input-group" style="margin:0;">
+                    <label>Tipo Intervento</label>
+                    <select id="custom-log-type">
+                        <option value="Primo Soccorso 🩹">Primo Soccorso</option>
+                        <option value="Richiamo Sicurezza 🗣️">Richiamo Sicurezza</option>
+                        <option value="Oggetto Smarrito 🎒">Oggetto Smarrito</option>
+                        <option value="Manutenzione / Pulizia 🔄">Manutenzione</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Dettagli / Note Intervento</label>
+                <input type="text" id="custom-log-note" placeholder="Es. Medicazione escoriazione o richiamo tuffi...">
+            </div>
+            
+            <button class="btn" onclick="addDetailedLog()">Registra Intervento</button>
+
+            <ul class="log-list" id="log-list"></ul>
+        </div>
+
+        <!-- Stampa e Report Finale -->
+        <div class="card full-width">
+            <button class="btn" style="background: #334155;" onclick="window.print()">🖨️ Stampa / Salva Report PDF</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Imposta orario attuale nei log all'apertura
+        document.getElementById('custom-log-time').value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // Stato Applicazione
+        let count = 0;
+        const maxCapacity = 150;
+        let sunbeds = Array(24).fill('free');
+
+        // Modal Guida
+        function openGuide() { document.getElementById('guideModal').style.display = 'flex'; }
+        function closeGuide() { document.getElementById('guideModal').style.display = 'none'; }
+
+        // Contatore Presenze
+        function changeCount(val) {
+            count = Math.max(0, count + val);
+            document.getElementById('counter-val').innerText = count;
+            document.getElementById('capacity-text').innerText = `${count} / ${maxCapacity}`;
+            
+            const percentage = Math.min(100, (count / maxCapacity) * 100);
+            const fill = document.getElementById('progress-fill');
+            fill.style.width = percentage + '%';
+
+            if (count > maxCapacity) {
+                fill.classList.add('overflow-alert');
+            } else if (percentage > 85) {
+                fill.className = 'progress-bar-fill';
+                fill.style.background = 'var(--warning)';
+            } else {
+                fill.className = 'progress-bar-fill';
+                fill.style.background = 'var(--success)';
+            }
+        }
+
+        // Calcolatore Chimico
+        function calcChemicals() {
+            const vol = parseFloat(document.getElementById('pool-vol').value) || 0;
+            const ph = parseFloat(document.getElementById('ph-val').value) || 7.2;
+            const cl = parseFloat(document.getElementById('cl-val').value) || 1.5;
+            const res = document.getElementById('chem-result');
+
+            let msg = [];
+            if (ph < 7.2) msg.push(`Aggiungere <strong>${((7.2 - ph) * 10 * vol).toFixed(0)}g</strong> di pH Plus`);
+            if (ph > 7.6) msg.push(`Aggiungere <strong>${((ph - 7.6) * 10 * vol).toFixed(0)}g</strong> di pH Minus`);
+            if (cl < 1.0) msg.push(`Aggiungere <strong>${((1.5 - cl) * 2 * vol).toFixed(0)}g</strong> di Cloro Granulare`);
+
+            if (msg.length === 0) {
+                res.innerHTML = "Stato: <strong style='color: var(--success);'>Parametri Ottimali</strong>";
+            } else {
+                res.innerHTML = "Azione consigliata:<br>" + msg.join("<br>");
+            }
+        }
+
+        // Gestione Task Manutenzione
+        function completeTask(id, title) {
+            const el = document.getElementById(id);
+            el.classList.toggle('completed');
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const list = document.getElementById('log-list');
+            const li = document.createElement('li');
+            li.className = 'log-item';
+            li.innerHTML = `
+                <div class="log-item-details">
+                    <strong>Manutenzione: ${title}</strong>
+                    <span style="color: #64748b; font-size:0.8rem;">Eseguita regolarmente</span>
+                </div>
+                <span style="font-weight:bold; color: var(--primary-dark);">${time}</span>
+            `;
+            list.prepend(li);
+        }
+
+        // Mappa Lettini
+        function renderSunbeds() {
+            const container = document.getElementById('sunbed-container');
+            container.innerHTML = '';
+            sunbeds.forEach((status, idx) => {
+                const el = document.createElement('div');
+                el.className = `sunbed ${status}`;
+                el.innerText = `L-${idx + 1}`;
+                el.onclick = () => toggleSunbed(idx);
+                container.appendChild(el);
+            });
+        }
+
+        function toggleSunbed(idx) {
+            const states = ['free', 'occupied', 'reserved'];
+            let current = states.indexOf(sunbeds[idx]);
+            sunbeds[idx] = states[(current + 1) % states.length];
+            renderSunbeds();
+        }
+
+        // Registro Interventi Dettagliato
+        function addDetailedLog() {
+            const time = document.getElementById('custom-log-time').value || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const type = document.getElementById('custom-log-type').value;
+            const note = document.getElementById('custom-log-note').value;
+
+            const list = document.getElementById('log-list');
+            const li = document.createElement('li');
+            li.className = 'log-item';
+            li.innerHTML = `
+                <div class="log-item-details">
+                    <strong>${type}</strong>
+                    <span style="color: #64748b; font-size:0.8rem;">${note ? note : 'Nessuna nota aggiuntiva'}</span>
+                </div>
+                <span style="font-weight:bold; color: var(--primary-dark);">${time}</span>
+            `;
+            list.prepend(li);
+
+            // Reset campo nota
+            document.getElementById('custom-log-note').value = '';
+        }
+
+        // Allarme Emergenza
+        function triggerEmergency() {
+            if (confirm("Attivare l'allarme Evacuazione Vasca per Maltempo?")) {
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const list = document.getElementById('log-list');
+                const li = document.createElement('li');
+                li.className = 'log-item';
+                li.style.borderLeft = "4px solid var(--danger)";
+                li.innerHTML = `
+                    <div class="log-item-details">
+                        <strong style="color:var(--danger);">⚡ ALLARME MALTEMPO / EVACUAZIONE</strong>
+                        <span style="color: #64748b; font-size:0.8rem;">Sgombero vasca eseguito</span>
+                    </div>
+                    <span style="font-weight:bold; color: var(--danger);">${time}</span>
+                `;
+                list.prepend(li);
+                alert("PROCEDURA ATTIVATA: Far uscire tutti i bagnanti dall'acqua e mettere in sicurezza il solarium!");
+            }
+        }
+
+        // Inizializzazione
+        renderSunbeds();
+        calcChemicals();
+    </script>
+</body>
+</html>
